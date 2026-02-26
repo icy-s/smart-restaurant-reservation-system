@@ -72,7 +72,7 @@ public class RecommendationService {
         boolean hasExactCapacityTable = hasExactCapacityTable(currentTables, zone, partySize);
 
         TableRecommendation mergedOption = null;
-        if (partySize > 1 && bestSingle == null && !hasExactCapacityTable) {
+        if (partySize > 1 && !hasExactCapacityTable) {
             mergedOption = findMergedOption(request, currentTables, occupiedIds);
             if (mergedOption != null) {
                 filtered.add(0, mergedOption);
