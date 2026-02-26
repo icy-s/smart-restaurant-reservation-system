@@ -10,15 +10,6 @@ Veebirakendus, mis võimaldab kliendil:
 - näha saaliplaanil, millised lauad on hõivatud ja milline laud on kõige parem soovitus;
 - saada soovituseks päevapraadi TheMealDB avalikust API-st.
 
-## Repositooriumi kloonimine
-
-Klooni projekt ja liigu projekti kausta:
-
-```bash
-git clone https://github.com/icy-s/smart-restaurant-reservation-system.git
-cd smart-restaurant-reservation-system
-```
-
 ## Tehnoloogiad
 - Java 21 (LTS)
 - Spring Boot 3
@@ -30,6 +21,15 @@ cd smart-restaurant-reservation-system
 - **JDK 21** paigaldatud ja IDE-s valitud (Project SDK = Java 21).
 - Git (projekti kloonimiseks).
 - **Maven ei ole vajalik**, kui kasutad Maven Wrapper’it (`mvnw`).
+
+## Repositooriumi kloonimine
+
+Klooni projekt ja liigu projekti kausta:
+
+```bash
+git clone https://github.com/icy-s/smart-restaurant-reservation-system.git
+cd smart-restaurant-reservation-system
+```
 
 ## Käivitamine ilma Mavenita (Maven Wrapper)
 
