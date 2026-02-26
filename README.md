@@ -25,7 +25,10 @@ Rakendus avaneb aadressil: `http://localhost:8080`
 mvn test
 ```
 
-## Docker
+## Dockeris käivitamine
+1. Paigalda Docker.
+   Windowsis on enne vaja paigaldada WSL (Windows Subsystem for Linux).
+2. Ava PowerShell kloonitud projekti kaustas ja käivita käsud:
 ```bash
 docker build -t smart-restaurant-reservation .
 docker run --rm -p 8080:8080 smart-restaurant-reservation
