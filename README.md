@@ -12,7 +12,7 @@ Veebirakendus, mis võimaldab kliendil:
 - Java 21 (LTS)
 - Spring Boot 3
 - Maven
-- Frontend: HTML + CSS + Vanilla JavaScript (Spring Boot static resources)
+- Frontend: HTML + CSS (Bootstrap) + Vanilla JavaScript (Spring Boot static resources)
 
 ## Käivitamine
 ```bash
