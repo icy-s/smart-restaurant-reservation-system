@@ -92,6 +92,8 @@ docker build -t smart-restaurant-reservation .
 docker run --rm -p 8080:8080 smart-restaurant-reservation
 ```
 
+<img src="https://i.imgur.com/jk7rrwh.png" alt="Project Preview 2">
+
 ## Rakendatud loogika
 1. Süsteem võtab sisendiks aja, seltskonna suuruse, tsooni ja eelistused.
 2. Hõive simuleeritakse broneeringuplokkidena (2–3h), mis teeb vabade aegade hindamise realistlikumaks.
