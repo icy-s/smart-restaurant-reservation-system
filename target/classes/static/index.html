@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutikas restoranibroneering</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="container">
+    <h1>🍽️ Restorani laudade broneerimine</h1>
+    <p>Vali aeg, seltskonna suurus ja eelistused. Süsteem soovitab parima laua saaliplaanil.</p>
+
+    <form id="searchForm" class="filters">
+        <label>Kuupäev ja kellaaeg
+            <input type="datetime-local" id="dateTime" required />
+        </label>
+        <label>Inimeste arv
+            <input type="number" id="partySize" min="1" max="12" value="2" required />
+        </label>
+        <label>Tsoon
+            <select id="zone">
+                <option value="">Kõik tsoonid</option>
+                <option value="INDOOR">Sisesaal</option>
+                <option value="TERRACE">Terrass</option>
+                <option value="PRIVATE_ROOM">Privaatruum</option>
+            </select>
+        </label>
+
+        <div class="prefs">
+            <label><input type="checkbox" id="privacy" /> Vaikne nurk / privaatsus</label>
+            <label><input type="checkbox" id="window" /> Akna all</label>
+            <label><input type="checkbox" id="accessibility" /> Ligipääsetavus</label>
+            <label><input type="checkbox" id="kidsArea" /> Lasteala lähedal</label>
+        </div>
+
+        <button type="submit">Leia sobiv laud</button>
+    </form>
+
+    <div id="algorithmInfo" class="info"></div>
+    <div id="plan" class="plan"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
