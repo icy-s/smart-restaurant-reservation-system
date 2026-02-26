@@ -11,25 +11,68 @@ Veebirakendus, mis võimaldab kliendil:
 ## Tehnoloogiad
 - Java 21 (LTS)
 - Spring Boot 3
-- Maven
+- Maven (Maven Wrapper kaasas)
 - Frontend: HTML + CSS (Bootstrap) + Vanilla JavaScript (Spring Boot static resources)
 
-## Käivitamine
+## Eeldused
+
+- **JDK 21** paigaldatud ja IDE-s valitud (Project SDK = Java 21).
+- Git (projekti kloonimiseks).
+- **Maven ei ole vajalik**, kui kasutad Maven Wrapper’it (`mvnw`).
+
+## Käivitamine ilma Mavenita (soovituslik: Maven Wrapper)
+
+> Kui sul puudub `mvn` (Maven), kasuta Maven Wrapper’it. See töötab ka puhtas masinas.
+
+**macOS / Linux**
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
+
+**Windows (PowerShell)**
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
 Rakendus avaneb aadressil: `http://localhost:8080`
 
-## Testid
+## Käivitamine IDE-st
+
+1. Ava projekt (pom.xml) IDE-s: **File → Open**
+2. Kontrolli, et IDE kasutab **JDK 21** (Project SDK / JAVA_HOME).
+3. Leia põhiklass `*Application` (Spring Boot main class)
+4. Vajuta klassi juures ▶ **Run** (või loo Run Configuration tüübiga **Spring Boot**)
+
+## JAR-failina käivitamine (alternatiiv)
+
 ```bash
-mvn test
+./mvnw clean package
+java -jar target/*.jar
 ```
+
+## Testid
+
+**macOS / Linux**
+```bash
+./mvnw test
+```
+
+**Windows (PowerShell)**
+```powershell
+.\mvnw.cmd test
+```
+
+## Levinud probleemid
+
+- **Port 8080 on kinni**: sulge teine rakendus, mis kasutab 8080 porti, või muuda `server.port` väärtust.
+- **TheMealDB API**: vajab internetiühendust; tõrke korral kuvatakse varusoovitus.
+- **Unsupported class file major version ...** → veendu, et kasutad **JDK 21** (JAVA_HOME / IDE Project SDK).
 
 ## Dockeris käivitamine
 1. Paigalda Docker.
    Windowsis on enne vaja paigaldada WSL (Windows Subsystem for Linux).
 2. Ava PowerShell kloonitud projekti kaustas ja käivita käsud:
-```bash
+```powershell
 docker build -t smart-restaurant-reservation .
 docker run --rm -p 8080:8080 smart-restaurant-reservation
 ```
@@ -44,16 +87,19 @@ docker run --rm -p 8080:8080 smart-restaurant-reservation
 4. Kui üksik laud ei mahu grupile, otsitakse kõrvuti asuvatest laudadest parim liitlaud.
 5. Admin-vaates saab laudu hiirega lohistada ja salvestada paigutuse.
 
-## Eeldused
-- Selles versioonis kasutatakse in-memory mudelit, püsivat andmebaasi ei ole.
-- Välise retsepti API tõrke korral kuvatakse varusoovitus.
+## Arenduse logi (aeg, ligikaudne)
 
-## Arenduse logi (aeg)
-- Projektistruktuur ja API: ~45 min
-- Skoorimise loogika ja hõivatuse simulatsioon: ~35 min
-- UI (filter + saaliplaan + värvid): ~40 min
-- Testid ja dokumentatsioon: ~20 min
-- Kokku: ~2 h 20 min
+- Projekti bootstrap (Spring Boot, struktuur, esialgne API): ~1 h
+- Broneeringu/hõivatuse simulatsioon + skoorimine + liitlauad: ~1 h 15 min
+- UI (filter, saaliplaan, värvid, põhjendused): ~1 h 30 min
+- Admin-vaade (drag & drop, paigutuse salvestus, liitlaudade liigutamine): ~1 h
+- TheMealDB integratsioon + varusoovitus: ~20 min
+- Testid + refaktor/bugfixid: ~45 min
+- Docker + Maven Wrapper + README täiendused: ~30–40 min
+
+**Kokku:** ~6 h (±30 min)
+
+_Märkus: aeg sisaldab iteratsioone, bugfix’e ja dokumentatsiooni täiendamist._
 
 ## Keerukused ja lahendused
 - **Ajaformaat brauseri ja backendi vahel:**
