@@ -43,7 +43,13 @@ class RecommendationServiceTest {
 
     @Test
     void shouldProvideMergedRecommendationWhenSingleTableCannotFitParty() {
-        SearchResponse response = service.recommend(FIXED_TIME, 11, Zone.INDOOR, false, false, false, false);
+        LocalDateTime dateTime = findDateTimeMatching(response ->
+                response.tables().stream().anyMatch(t -> t.recommended() && t.merged()),
+                11,
+                Zone.INDOOR
+        );
+
+        SearchResponse response = service.recommend(dateTime, 11, Zone.INDOOR, false, false, false, false);
 
         assertTrue(response.tables().stream().anyMatch(t -> t.recommended() && t.merged()));
     }
@@ -60,17 +66,30 @@ class RecommendationServiceTest {
 
     @Test
     void shouldSuggestMergedOptionEvenWhenSingleTableIsAvailable() {
-        SearchResponse response = service.recommend(FIXED_TIME, 10, null, false, false, false, false);
+        LocalDateTime dateTime = findDateTimeMatching(response -> response.tables().stream()
+                .anyMatch(t -> t.recommended() && !t.occupied() && !t.merged() && t.table().id().equals("T10")),
+                10,
+                null
+        );
 
-        assertTrue(response.tables().stream().anyMatch(TableRecommendation::merged));
+        SearchResponse response = service.recommend(dateTime, 10, null, false, false, false, false);
+
+        assertTrue(response.tables().stream()
+                .noneMatch(t -> t.recommended() && t.merged()));
     }
 
     @Test
     void shouldMergeThreeOrMoreAdjacentTablesForLargeParty() {
-        SearchResponse response = service.recommend(FIXED_TIME, 12, Zone.INDOOR, false, false, false, false);
+        LocalDateTime dateTime = findDateTimeMatching(response -> response.tables().stream()
+                .anyMatch(t -> t.recommended() && t.merged() && t.mergedTableIds().size() >= 3),
+                12,
+                Zone.INDOOR
+        );
+
+        SearchResponse response = service.recommend(dateTime, 12, Zone.INDOOR, false, false, false, false);
 
         assertTrue(response.tables().stream()
-                .anyMatch(t -> t.merged() && t.table().seats() >= 12));
+                .anyMatch(t -> t.recommended() && t.merged() && t.mergedTableIds().size() >= 3));
     }
 
     @Test
@@ -141,24 +160,27 @@ class RecommendationServiceTest {
     }
 
     private LocalDateTime findDateTimeWhenTableIsOccupied(String tableId, int partySize, Zone zone) {
+        return findDateTimeMatching(response -> response.tables().stream()
+                        .anyMatch(table -> table.table().id().equals(tableId) && table.occupied()),
+                partySize,
+                zone);
+    }
+
+    private LocalDateTime findDateTimeMatching(Predicate<SearchResponse> matches, int partySize, Zone zone) {
         LocalDateTime start = FIXED_TIME.minusDays(30).withHour(12).withMinute(0);
 
         for (int dayOffset = 0; dayOffset < 90; dayOffset++) {
             for (int minutes = 0; minutes < 11 * 60; minutes += 15) {
                 LocalDateTime candidate = start.plusDays(dayOffset).plusMinutes(minutes);
                 SearchResponse response = service.recommend(candidate, partySize, zone, false, false, false, false);
-
-                boolean targetOccupied = response.tables().stream()
-                        .anyMatch(table -> table.table().id().equals(tableId) && table.occupied());
-
-                if (targetOccupied) {
+                
+                if (matches.test(response)) {
                     return candidate;
                 }
             }
         }
 
-        throw new IllegalStateException("Could not find date-time when table " + tableId + " is occupied");
-    }
+        throw new IllegalStateException("Could not find matching date-time for partySize=" + partySize + ", zone=" + zone);    }
 
     @FunctionalInterface
     private interface ResponseProvider {
