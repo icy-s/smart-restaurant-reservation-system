@@ -8,6 +8,7 @@ import com.example.restaurant.model.Zone;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -53,7 +54,8 @@ public class RecommendationService {
                 .map(t -> new TableRecommendation(t.table(), t.occupied(), t.table().id().equals(bestId), t.score(), t.reason()))
                 .collect(Collectors.toList());
 
-        String info = "Skoor = sobivus seltskonna suurusega + eelistused. Hõivatud lauad genereeritakse pseudo-juhuslikult valitud aja põhjal.";
+        String info = "Skoor = sobivus seltskonna suurusega + eelistuste boonused ja trahvid. " +
+                "Kui eelistus on valitud, siis sobiv laud saab +35 punkti, mittesobiv -15 punkti.";
         return new SearchResponse(request, marked, info);
     }
 
@@ -67,16 +69,36 @@ public class RecommendationService {
 
         int emptySeats = table.seats() - request.partySize();
         double score = 100 - (emptySeats * 12.0);
+        List<String> preferenceDetails = new ArrayList<>();
 
-        if (request.privacy() && table.privacy()) score += 20;
-        if (request.window() && table.window()) score += 20;
-        if (request.accessibility() && table.accessibility()) score += 20;
-        if (request.kidsArea() && table.kidsArea()) score += 20;
+        score += applyPreferenceBoostOrPenalty(request.privacy(), table.privacy(), preferenceDetails, "privaatsus");
+        score += applyPreferenceBoostOrPenalty(request.window(), table.window(), preferenceDetails, "akna all");
+        score += applyPreferenceBoostOrPenalty(request.accessibility(), table.accessibility(), preferenceDetails, "ligipääsetav");
+        score += applyPreferenceBoostOrPenalty(request.kidsArea(), table.kidsArea(), preferenceDetails, "lasteala lähedal");
 
-        if (request.zone() != null && table.zone() == request.zone()) score += 10;
+        if (request.zone() != null && table.zone() == request.zone()) {
+            score += 10;
+            preferenceDetails.add("tsoon sobib");
+        }
 
         String reason = "Sobib " + request.partySize() + " külalisele; vabu toole " + emptySeats;
+        if (!preferenceDetails.isEmpty()) {
+            reason += " · " + String.join(", ", preferenceDetails);
+        }
         return new TableRecommendation(table, false, false, score, reason);
+    }
+
+    private double applyPreferenceBoostOrPenalty(boolean requested, boolean supported,
+                                                 List<String> details, String label) {
+        if (!requested) {
+            return 0;
+        }
+        if (supported) {
+            details.add(label + " ✓");
+            return 35;
+        }
+        details.add(label + " ✕");
+        return -15;
     }
 
     private Set<String> generateOccupiedTables(LocalDateTime dateTime) {

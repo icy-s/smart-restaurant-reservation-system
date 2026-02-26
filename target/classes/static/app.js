@@ -59,6 +59,17 @@ function renderPlan(data) {
     });
 }
 
+function featureBadges(table) {
+    const items = [
+        table.window ? '<span class="table-badge">🪟 Aken</span>' : '',
+        table.privacy ? '<span class="table-badge">🤫 Vaikne</span>' : '',
+        table.accessibility ? '<span class="table-badge">♿ Ligip.</span>' : '',
+        table.kidsArea ? '<span class="table-badge">🧸 Lasteala</span>' : ''
+    ];
+
+    return items.filter(Boolean).join(' ');
+}
+
 function zoneLabel(zone) {
     switch (zone) {
         case 'INDOOR': return 'Sisesaal';

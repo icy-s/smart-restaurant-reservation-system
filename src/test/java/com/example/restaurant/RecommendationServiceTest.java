@@ -16,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RecommendationServiceTest {
 
     private static final LocalDateTime FIXED_TIME = LocalDateTime.of(2026, 3, 10, 19, 0);
+    private static final double MATCH_BONUS = 35.0;
+    private static final double MISMATCH_PENALTY = -15.0;
+    
     private final RecommendationService service = new RecommendationService();
 
     @Test
@@ -27,46 +30,63 @@ class RecommendationServiceTest {
 
     @Test
     void shouldApplyWindowPreferenceToTableScores() {
-        SearchResponse withoutWindow = service.recommend(FIXED_TIME, 2,
-                null, false, false, false, false);
-        SearchResponse withWindow = service.recommend(FIXED_TIME, 2,
-                null, false, true, false, false);
-
-        Map<String, TableRecommendation> baseById = toEligibleMap(withoutWindow, table -> table.table().window());
-        Map<String, TableRecommendation> windowById = toEligibleMap(withWindow, table -> table.table().window());
-
-        assertTrue(!baseById.isEmpty(), "Expected at least one free and eligible window table");
-
-        baseById.forEach((id, base) -> {
-            TableRecommendation withPref = windowById.get(id);
-            assertEquals(base.score() + 20.0, withPref.score(), 0.001);
-        });
+        assertPreferenceScoring(
+                response -> response.table().window(),
+                (dt) -> service.recommend(dt, 2, null, false, true, false, false)
+        );
     }
 
     @Test
     void shouldApplyPrivacyPreferenceToTableScores() {
-        SearchResponse withoutPrivacy = service.recommend(FIXED_TIME, 2,
+        assertPreferenceScoring(
+                response -> response.table().privacy(),
+                (dt) -> service.recommend(dt, 2, null, true, false, false, false)
+        );
+    }
+
+    @Test
+    void shouldApplyAccessibilityPreferenceToTableScores() {
+        assertPreferenceScoring(
+                response -> response.table().accessibility(),
+                (dt) -> service.recommend(dt, 2, null, false, false, true, false)
+        );
+    }
+
+    @Test
+    void shouldApplyKidsAreaPreferenceToTableScores() {
+        assertPreferenceScoring(
+                response -> response.table().kidsArea(),
+                (dt) -> service.recommend(dt, 2, null, false, false, false, true)
+        );
+    }
+
+    private void assertPreferenceScoring(Predicate<TableRecommendation> hasFeature,
+                                         ResponseProvider withPreferenceProvider) {
+        SearchResponse withoutPreference = service.recommend(FIXED_TIME, 2,
                 null, false, false, false, false);
-        SearchResponse withPrivacy = service.recommend(FIXED_TIME, 2,
-                null, true, false, false, false);
+        SearchResponse withPreference = withPreferenceProvider.get(FIXED_TIME);
 
-        Map<String, TableRecommendation> baseById = toEligibleMap(withoutPrivacy, table -> table.table().privacy());
-        Map<String, TableRecommendation> privacyById = toEligibleMap(withPrivacy, table -> table.table().privacy());
+        Map<String, TableRecommendation> baseById = toEligibleMap(withoutPreference);
+        Map<String, TableRecommendation> withPrefById = toEligibleMap(withPreference);
 
-        assertTrue(!baseById.isEmpty(), "Expected at least one free and eligible privacy table");
+        assertTrue(!baseById.isEmpty(), "Expected at least one free and eligible table");
 
         baseById.forEach((id, base) -> {
-            TableRecommendation withPref = privacyById.get(id);
-            assertEquals(base.score() + 20.0, withPref.score(), 0.001);
+            TableRecommendation withPref = withPrefById.get(id);
+            double expectedDelta = hasFeature.test(base) ? MATCH_BONUS : MISMATCH_PENALTY;
+            assertEquals(base.score() + expectedDelta, withPref.score(), 0.001);
         });
     }
 
-    private Map<String, TableRecommendation> toEligibleMap(SearchResponse response,
-                                                           Predicate<TableRecommendation> featureEnabled) {
+    private Map<String, TableRecommendation> toEligibleMap(SearchResponse response) {
         return response.tables().stream()
                 .filter(table -> !table.occupied())
                 .filter(table -> table.table().seats() >= 2)
-                .filter(featureEnabled)
                 .collect(Collectors.toMap(table -> table.table().id(), table -> table));
+    }
+
+    @FunctionalInterface
+    private interface ResponseProvider {
+        SearchResponse get(LocalDateTime dateTime);
     }
 }

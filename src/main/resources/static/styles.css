@@ -5,6 +5,7 @@
     --occupied: #e25555;
     --available: #59b27a;
     --recommended: #f5c542;
+    --table-width: 112px;
 }
 
 body {
@@ -58,27 +59,27 @@ body {
 
 .table {
     position: absolute;
-    width: 130px;
-    min-height: 84px;
+    width: var(--table-width);
+    min-height: 78px;
     border-radius: 12px;
     color: #111827;
-    padding: 0.55rem;
+    padding: 0.45rem;
     border: 1px solid rgba(0, 0, 0, 0.12);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     box-sizing: border-box;
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(1px);
 }
 
 .table .table-title {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
 }
 
 .table .reason {
     display: block;
-    margin-top: 0.3rem;
-    font-size: 0.72rem;
+    margin-top: 0.2rem;
+    font-size: 0.68rem;
     opacity: 0.9;
 }
 
@@ -87,5 +88,5 @@ body {
 .table.recommended {
     background: var(--recommended);
     border-color: #8a6b00;
-    box-shadow: 0 0 0 4px rgba(245, 197, 66, 0.35), 0 10px 20px rgba(15, 23, 42, 0.14);
+    box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.38), 0 8px 16px rgba(15, 23, 42, 0.12);
 }
