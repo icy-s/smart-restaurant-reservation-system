@@ -1,3 +1,5 @@
+<img src="https://i.imgur.com/sVDseom.png" alt="Project Preview">
+
 # Smart Restaurant Reservation System
 
 Veebirakendus, mis võimaldab kliendil:
