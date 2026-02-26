@@ -8,6 +8,15 @@ Veebirakendus, mis võimaldab kliendil:
 - näha saaliplaanil, millised lauad on hõivatud ja milline laud on kõige parem soovitus;
 - saada soovituseks päevapraadi TheMealDB avalikust API-st.
 
+## Repositooriumi kloonimine
+
+Klooni projekt ja liigu projekti kausta:
+
+```bash
+git clone https://github.com/icy-s/smart-restaurant-reservation-system.git
+cd smart-restaurant-reservation-system
+```
+
 ## Tehnoloogiad
 - Java 21 (LTS)
 - Spring Boot 3
@@ -20,7 +29,7 @@ Veebirakendus, mis võimaldab kliendil:
 - Git (projekti kloonimiseks).
 - **Maven ei ole vajalik**, kui kasutad Maven Wrapper’it (`mvnw`).
 
-## Käivitamine ilma Mavenita (soovituslik: Maven Wrapper)
+## Käivitamine ilma Mavenita (Maven Wrapper)
 
 > Kui sul puudub `mvn` (Maven), kasuta Maven Wrapper’it. See töötab ka puhtas masinas.
 
@@ -29,7 +38,11 @@ Veebirakendus, mis võimaldab kliendil:
 ./mvnw spring-boot:run
 ```
 
-**Windows (PowerShell)**
+### Windows (PowerShell)
+
+1) Ava **PowerShell** kloonitud projekti kaustas (või tee kõigepealt `cd smart-restaurant-reservation-system`).  
+2) Käivita:
+
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
