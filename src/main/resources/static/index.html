@@ -4,42 +4,85 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nutikas restoranibroneering</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="container">
-    <h1>🍽️ Restorani laudade broneerimine</h1>
-    <p>Vali aeg, seltskonna suurus ja eelistused. Süsteem soovitab parima laua saaliplaanil.</p>
+<main class="container py-4">
+    <header class="hero p-4 p-md-5 mb-4">
+        <h1 class="display-6 mb-2">🍽️ Restorani laudade broneerimine</h1>
+        <p class="lead mb-0">Vali aeg, seltskonna suurus ja eelistused — süsteem soovitab automaatselt parima laua.</p>
+    </header>
 
-    <form id="searchForm" class="filters">
-        <label>Kuupäev ja kellaaeg
-            <input type="datetime-local" id="dateTime" required />
-        </label>
-        <label>Inimeste arv
-            <input type="number" id="partySize" min="1" max="12" value="2" required />
-        </label>
-        <label>Tsoon
-            <select id="zone">
-                <option value="">Kõik tsoonid</option>
-                <option value="INDOOR">Sisesaal</option>
-                <option value="TERRACE">Terrass</option>
-                <option value="PRIVATE_ROOM">Privaatruum</option>
-            </select>
-        </label>
+    <section class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                    <label for="dateTime" class="form-label">Kuupäev ja kellaaeg</label>
+                    <input type="datetime-local" id="dateTime" class="form-control" required />
+                </div>
 
-        <div class="prefs">
-            <label><input type="checkbox" id="privacy" /> Vaikne nurk / privaatsus</label>
-            <label><input type="checkbox" id="window" /> Akna all</label>
-            <label><input type="checkbox" id="accessibility" /> Ligipääsetavus</label>
-            <label><input type="checkbox" id="kidsArea" /> Lasteala lähedal</label>
+                <div class="col-md-6 col-lg-2">
+                    <label for="partySize" class="form-label">Inimeste arv</label>
+                    <input type="number" id="partySize" min="1" max="12" value="2" class="form-control" required />
+                </div>
+
+                <div class="col-lg-3">
+                    <label for="zone" class="form-label">Tsoon</label>
+                    <select id="zone" class="form-select">
+                        <option value="">Kõik tsoonid</option>
+                        <option value="INDOOR">Sisesaal</option>
+                        <option value="TERRACE">Terrass</option>
+                        <option value="PRIVATE_ROOM">Privaatruum</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 d-grid align-content-end">
+                    <button type="submit" class="btn btn-primary btn-lg">Leia sobiv laud</button>
+                </div>
+
+                <div class="col-12">
+                    <div class="preferences rounded-3 p-3 mt-1">
+                        <p class="small text-muted mb-2">Eelistused</p>
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="privacy" class="form-check-input" />
+                                    <label class="form-check-label" for="privacy">Vaikne nurk / privaatsus</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="window" class="form-check-input" />
+                                    <label class="form-check-label" for="window">Akna all</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="accessibility" class="form-check-input" />
+                                    <label class="form-check-label" for="accessibility">Ligipääsetavus</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="kidsArea" class="form-check-input" />
+                                    <label class="form-check-label" for="kidsArea">Lasteala lähedal</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
+    </section>
 
-        <button type="submit">Leia sobiv laud</button>
-    </form>
-
-    <div id="algorithmInfo" class="info"></div>
-    <div id="plan" class="plan"></div>
-</div>
+    <section class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div id="algorithmInfo" class="alert alert-secondary py-2 mb-3"></div>
+            <div id="plan" class="plan"></div>
+        </div>
+    </section>
+</main>
 
 <script src="app.js"></script>
 </body>

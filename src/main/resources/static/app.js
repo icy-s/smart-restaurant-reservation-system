@@ -4,7 +4,7 @@ const info = document.getElementById('algorithmInfo');
 
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-document.getElementById('dateTime').value = now.toISOString().slice(0,16);
+document.getElementById('dateTime').value = now.toISOString().slice(0, 16);
 
 function toApiDateTime(localValue) {
     return new Date(localValue).toISOString().slice(0, 19);
@@ -30,6 +30,7 @@ function loadAvailability(e) {
         .then(renderPlan)
         .catch(() => {
             info.textContent = 'Andmete laadimine ebaõnnestus.';
+            info.className = 'alert alert-danger py-2 mb-3';
         });
 }
 
@@ -41,6 +42,7 @@ function renderPlan(data) {
             <span class="l-recommended">Soovitatud</span>
         </div>`;
     info.textContent = data.algorithmInfo;
+    info.className = 'alert alert-secondary py-2 mb-3';
 
     data.tables.forEach(item => {
         const card = document.createElement('div');
@@ -49,10 +51,10 @@ function renderPlan(data) {
         card.style.left = `${item.table.x}px`;
         card.style.top = `${item.table.y}px`;
         card.innerHTML = `
-            <strong>${item.table.id}</strong><br/>
-            ${item.table.seats} kohta<br/>
-            ${zoneLabel(item.table.zone)}<br/>
-            ${item.reason}`;
+            <div class="table-title">${item.table.id}</div>
+            <div>${item.table.seats} kohta</div>
+            <div>${zoneLabel(item.table.zone)}</div>
+            <small class="reason">${item.reason}</small>`;
         plan.appendChild(card);
     });
 }
