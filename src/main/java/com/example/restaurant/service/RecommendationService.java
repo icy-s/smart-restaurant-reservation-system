@@ -9,6 +9,7 @@ import com.example.restaurant.model.TableRecommendation;
 import com.example.restaurant.model.Zone;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -294,26 +295,31 @@ public class RecommendationService {
     private Set<String> generateOccupiedTables(LocalDateTime dateTime) {
         Set<String> occupied = new HashSet<>();
         LocalDate date = dateTime.toLocalDate();
+        List<TableInfo> tables = currentTables();
+        int hour = dateTime.getHour();
 
-    for (TableInfo table : currentTables()) {
-            Random random = new Random((long) date.toEpochDay() * 31 + table.id().hashCode());
-            LocalDateTime cursor = date.atTime(12, 0).plusMinutes(random.nextInt(40));
-            int reservationCount = 1 + random.nextInt(4);
-
-            for (int i = 0; i < reservationCount; i++) {
-                int stayMinutes = 120 + random.nextInt(61);
-                LocalDateTime end = cursor.plusMinutes(stayMinutes);
-                if (!dateTime.isBefore(cursor) && dateTime.isBefore(end)) {
-                    occupied.add(table.id());
-                    break;
-                }
-
-                int gapMinutes = 25 + random.nextInt(70);
-                cursor = end.plusMinutes(gapMinutes);
-                if (cursor.getHour() >= 23) {
-                    break;
-                }
+        double baseLoad = (hour >= 12 && hour <= 14) || (hour >= 18 && hour <= 21) ? 0.55 : 0.3;
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY) {
+            baseLoad += 0.1;
+        }
+        for (TableInfo table : tables) {
+            long seed = dateTime.withMinute(0).withSecond(0).withNano(0).toEpochSecond(java.time.ZoneOffset.UTC)
+                    + table.id().hashCode();
+            Random random = new Random(seed);
+            double tableLoad = baseLoad + (random.nextDouble() * 0.15);
+            if (random.nextDouble() < tableLoad) {
+                occupied.add(table.id());
             }
+        }
+
+        int minFreeTables = 2;
+        while (tables.size() - occupied.size() < minFreeTables) {
+            String toFree = occupied.stream().sorted().findFirst().orElse(null);
+            if (toFree == null) {
+                break;
+            }
+            occupied.remove(toFree);
         }
 
         return occupied;
