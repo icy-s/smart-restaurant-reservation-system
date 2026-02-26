@@ -84,7 +84,7 @@ java -jar target/*.jar
 - **Unsupported class file major version ...** → veendu, et kasutad **JDK 21** (JAVA_HOME / IDE Project SDK).
 
 ## Dockeris käivitamine
-1. Paigalda Docker.
+1. Paigalda ja käivita Docker Desktop.
    Windowsis on enne vaja paigaldada WSL (Windows Subsystem for Linux).
 2. Ava PowerShell kloonitud projekti kaustas ja käivita käsud:
 ```powershell
