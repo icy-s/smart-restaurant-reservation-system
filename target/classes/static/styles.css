@@ -5,7 +5,8 @@
     --occupied: #e25555;
     --available: #59b27a;
     --recommended: #f5c542;
-    --table-width: 112px;
+    --merged: #7f92ff;
+    --table-width: 132px;
 }
 
 body {
@@ -56,11 +57,12 @@ body {
 .legend .l-available { background: color-mix(in srgb, var(--available) 20%, white); }
 .legend .l-occupied { background: color-mix(in srgb, var(--occupied) 22%, white); }
 .legend .l-recommended { background: color-mix(in srgb, var(--recommended) 35%, white); }
+.legend .l-merged { background: color-mix(in srgb, var(--merged) 35%, white); }
 
 .table {
     position: absolute;
     width: var(--table-width);
-    min-height: 78px;
+    min-height: 96px;
     border-radius: 12px;
     color: #111827;
     padding: 0.45rem;
@@ -79,8 +81,26 @@ body {
 .table .reason {
     display: block;
     margin-top: 0.2rem;
-    font-size: 0.68rem;
-    opacity: 0.9;
+    font-size: 0.66rem;
+    opacity: 0.92;
+}
+
+.table .badges {
+    margin-top: 0.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+}
+
+.table-badge {
+    background: rgba(255, 255, 255, 0.52);
+    border-radius: 999px;
+    font-size: 0.61rem;
+    padding: 0.08rem 0.35rem;
+}
+
+.table-badge.merge {
+    background: color-mix(in srgb, var(--merged) 75%, white);
 }
 
 .table.available { background: var(--available); }
@@ -89,4 +109,44 @@ body {
     background: var(--recommended);
     border-color: #8a6b00;
     box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.38), 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.table.draggable {
+    cursor: grab;
+    user-select: none;
+}
+
+.table.dragging {
+    cursor: grabbing;
+    opacity: 0.85;
+}
+
+.meal-card {
+    display: flex;
+    gap: 0.85rem;
+    border: 1px solid #d6dff5;
+    background: #f8fbff;
+    border-radius: 12px;
+    padding: 0.65rem;
+    align-items: center;
+}
+
+.meal-card img {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.meal-card .meal-title {
+    font-weight: 600;
+}
+
+.meal-card .meal-meta {
+    font-size: 0.87rem;
+    color: #4b5563;
+}
+
+.meal-card.fallback {
+    border-style: dashed;
 }

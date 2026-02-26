@@ -5,6 +5,7 @@ import java.util.List;
 public record SearchResponse(
         SearchRequest request,
         List<TableRecommendation> tables,
-        String algorithmInfo
+        String algorithmInfo,
+        MealSuggestion mealSuggestion
 ) {
 }

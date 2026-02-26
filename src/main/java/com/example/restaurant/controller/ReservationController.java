@@ -1,15 +1,20 @@
 package com.example.restaurant.controller;
 
 import com.example.restaurant.model.SearchResponse;
+import com.example.restaurant.model.TableInfo;
+import com.example.restaurant.model.TableLayoutUpdate;
 import com.example.restaurant.model.Zone;
 import com.example.restaurant.service.RecommendationService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -32,5 +37,15 @@ public class ReservationController {
             @RequestParam(defaultValue = "false") boolean kidsArea
     ) {
         return recommendationService.recommend(dateTime, partySize, zone, privacy, window, accessibility, kidsArea);
+    }
+
+    @GetMapping("/admin/layout")
+    public List<TableInfo> getLayout() {
+        return recommendationService.currentTables();
+    }
+
+    @PutMapping("/admin/layout")
+    public List<TableInfo> updateLayout(@RequestBody List<TableLayoutUpdate> updates) {
+        return recommendationService.updateLayout(updates);
     }
 }

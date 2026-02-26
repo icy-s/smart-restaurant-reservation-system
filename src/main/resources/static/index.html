@@ -11,7 +11,7 @@
 <main class="container py-4">
     <header class="hero p-4 p-md-5 mb-4">
         <h1 class="display-6 mb-2">🍽️ Restorani laudade broneerimine</h1>
-        <p class="lead mb-0">Vali aeg, seltskonna suurus ja eelistused — süsteem soovitab automaatselt parima laua.</p>
+        <p class="lead mb-0">Vali aeg, seltskonna suurus ja eelistused — süsteem soovitab automaatselt parima laua, liidab vajadusel lauad ning pakub päevapraadi ideed.</p>
     </header>
 
     <section class="card shadow-sm border-0 mb-4">
@@ -24,7 +24,7 @@
 
                 <div class="col-md-6 col-lg-2">
                     <label for="partySize" class="form-label">Inimeste arv</label>
-                    <input type="number" id="partySize" min="1" max="12" value="2" class="form-control" required />
+                    <input type="number" id="partySize" min="1" max="16" value="2" class="form-control" required />
                 </div>
 
                 <div class="col-lg-3">
@@ -39,6 +39,14 @@
 
                 <div class="col-lg-3 d-grid align-content-end">
                     <button type="submit" class="btn btn-primary btn-lg">Leia sobiv laud</button>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-3 align-items-center mt-2">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" id="adminMode" class="form-check-input" />
+                        <label class="form-check-label" for="adminMode">Admin vaade (lohistamine)</label>
+                    </div>
+                    <button id="saveLayout" type="button" class="btn btn-outline-secondary btn-sm" disabled>Salvesta paigutus</button>
                 </div>
 
                 <div class="col-12">
@@ -79,6 +87,7 @@
     <section class="card shadow-sm border-0">
         <div class="card-body p-4">
             <div id="algorithmInfo" class="alert alert-secondary py-2 mb-3"></div>
+            <div id="mealSuggestion" class="mb-3"></div>
             <div id="plan" class="plan"></div>
         </div>
     </section>
