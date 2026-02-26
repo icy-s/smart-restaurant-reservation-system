@@ -146,7 +146,6 @@ function featureBadges(table) {
 }
 
 function zoneLabel(zone) {
-    latestTables = data.tables;
     switch (zone) {
         case 'INDOOR': return 'Sisesaal';
         case 'TERRACE': return 'Terrass';
