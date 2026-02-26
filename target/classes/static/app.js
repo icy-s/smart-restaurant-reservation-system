@@ -74,7 +74,7 @@ function renderPlan(data) {
             <div>${zoneLabel(item.table.zone)}</div>
             <div class="badges">${featureBadges(item.table)} ${item.merged ? '<span class="table-badge merge">🔗 Liitlaud</span>' : ''}</div>
             <small class="reason">${item.reason}</small>`;
-        if (adminMode && !item.merged) {
+        if (adminMode) {
             makeDraggable(card);
         }
         plan.appendChild(card);
