@@ -7,6 +7,10 @@ const mealSuggestion = document.getElementById('mealSuggestion');
 
 let adminMode = false;
 let latestTables = [];
+const TABLE_WIDTH = 132;
+const TABLE_HEIGHT = 96;
+const TABLE_GAP = 16;
+const PLAN_PADDING = 12;
 
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -54,12 +58,15 @@ function renderPlan(data) {
 
     renderMealSuggestion(data.mealSuggestion);
 
+    const positions = resolveInitialOverlaps(data.tables);
+
     data.tables.forEach(item => {
         const card = document.createElement('div');
         const cssState = item.occupied ? 'occupied' : item.recommended ? 'recommended' : 'available';
         card.className = `table ${cssState}`;
-        card.style.left = `${item.table.x}px`;
-        card.style.top = `${item.table.y}px`;
+        const position = positions.get(item.table.id) ?? { x: item.table.x, y: item.table.y };
+        card.style.left = `${position.x}px`;
+        card.style.top = `${position.y}px`;
         card.dataset.id = item.table.id;
         card.innerHTML = `
             <div class="table-title">${item.table.id}</div>
@@ -96,24 +103,77 @@ function makeDraggable(card) {
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
+    let activePointerId = null;
 
-    card.onmousedown = (e) => {
+    const pointerMoveHandler = (e) => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        const bounds = plan.getBoundingClientRect();
+        const maxX = Math.max(0, bounds.width - card.offsetWidth - PLAN_PADDING);
+        const maxY = Math.max(30, bounds.height - card.offsetHeight - PLAN_PADDING);
+        const nextX = Math.max(0, Math.min(maxX, e.clientX - bounds.left - offsetX));
+        const nextY = Math.max(30, Math.min(maxY, e.clientY - bounds.top - offsetY));
+        card.style.left = `${nextX}px`;
+        card.style.top = `${nextY}px`;
+    };
+
+    const stopDragging = (e) => {
+        if (activePointerId !== null && e.pointerId !== activePointerId) return;
+        dragging = false;
+        activePointerId = null;
+        card.classList.remove('dragging');
+        card.releasePointerCapture?.(e.pointerId);
+        card.removeEventListener('pointermove', pointerMoveHandler);
+        card.removeEventListener('pointerup', stopDragging);
+        card.removeEventListener('pointercancel', stopDragging);
+    };
+
+    card.onpointerdown = (e) => {
+        if (e.button !== 0) return;
         dragging = true;
+        activePointerId = e.pointerId;
         offsetX = e.clientX - card.offsetLeft;
         offsetY = e.clientY - card.offsetTop;
         card.classList.add('dragging');
+        card.setPointerCapture?.(e.pointerId);
+        card.addEventListener('pointermove', pointerMoveHandler);
+        card.addEventListener('pointerup', stopDragging);
+        card.addEventListener('pointercancel', stopDragging);
     };
+}
 
-    document.onmousemove = (e) => {
-        if (!dragging) return;
-        card.style.left = `${Math.max(0, e.clientX - plan.getBoundingClientRect().left - offsetX)}px`;
-        card.style.top = `${Math.max(30, e.clientY - plan.getBoundingClientRect().top - offsetY)}px`;
-    };
+function resolveInitialOverlaps(tables) {
+    const positioned = [...tables]
+        .sort((a, b) => (a.table.y - b.table.y) || (a.table.x - b.table.x));
+    const occupied = [];
+    const map = new Map();
 
-    document.onmouseup = () => {
-        dragging = false;
-        card.classList.remove('dragging');
-    };
+    const planWidth = Math.max(plan.clientWidth || 0, TABLE_WIDTH + PLAN_PADDING * 2);
+    const maxX = Math.max(0, planWidth - TABLE_WIDTH - PLAN_PADDING);
+
+    positioned.forEach((item) => {
+        let x = Math.max(0, Math.min(maxX, item.table.x));
+        let y = Math.max(40, item.table.y);
+        let attempts = 0;
+
+        while (hasCollision(x, y, occupied) && attempts < 200) {
+            x += TABLE_GAP;
+            if (x > maxX) {
+                x = Math.max(0, Math.min(maxX, item.table.x));
+                y += TABLE_GAP;
+            }
+            attempts += 1;
+        }
+
+        occupied.push({ x, y });
+        map.set(item.table.id, { x, y });
+    });
+
+    return map;
+}
+
+function hasCollision(x, y, occupied) {
+    return occupied.some((pos) => Math.abs(pos.x - x) < (TABLE_WIDTH + TABLE_GAP)
+        && Math.abs(pos.y - y) < (TABLE_HEIGHT + TABLE_GAP));
 }
 
 function saveLayout() {
