@@ -49,6 +49,31 @@ class RecommendationServiceTest {
     }
 
     @Test
+    void shouldNotProvideMergedRecommendationWhenExactCapacityTableExists() {
+        LocalDateTime dateTime = findDateTimeWhenTableIsOccupied("T5", 5, Zone.INDOOR);
+
+        SearchResponse response = service.recommend(dateTime, 5, Zone.INDOOR, false, false, false, false);
+
+        assertTrue(response.tables().stream()
+                .noneMatch(table -> table.recommended() && table.merged()));
+    }
+
+    @Test
+    void shouldSuggestMergedOptionEvenWhenSingleTableIsAvailable() {
+        SearchResponse response = service.recommend(FIXED_TIME, 10, null, false, false, false, false);
+
+        assertTrue(response.tables().stream().anyMatch(TableRecommendation::merged));
+    }
+
+    @Test
+    void shouldMergeThreeOrMoreAdjacentTablesForLargeParty() {
+        SearchResponse response = service.recommend(FIXED_TIME, 12, Zone.INDOOR, false, false, false, false);
+
+        assertTrue(response.tables().stream()
+                .anyMatch(t -> t.merged() && t.table().seats() >= 12));
+    }
+
+    @Test
     void shouldApplyWindowPreferenceToTableScores() {
         assertPreferenceScoring(
                 response -> response.table().window(),
@@ -113,6 +138,26 @@ class RecommendationServiceTest {
                 .filter(table -> !table.occupied())
                 .filter(table -> table.table().seats() >= 2)
                 .collect(Collectors.toMap(table -> table.table().id(), table -> table));
+    }
+
+    private LocalDateTime findDateTimeWhenTableIsOccupied(String tableId, int partySize, Zone zone) {
+        LocalDateTime start = FIXED_TIME.minusDays(30).withHour(12).withMinute(0);
+
+        for (int dayOffset = 0; dayOffset < 90; dayOffset++) {
+            for (int minutes = 0; minutes < 11 * 60; minutes += 15) {
+                LocalDateTime candidate = start.plusDays(dayOffset).plusMinutes(minutes);
+                SearchResponse response = service.recommend(candidate, partySize, zone, false, false, false, false);
+
+                boolean targetOccupied = response.tables().stream()
+                        .anyMatch(table -> table.table().id().equals(tableId) && table.occupied());
+
+                if (targetOccupied) {
+                    return candidate;
+                }
+            }
+        }
+
+        throw new IllegalStateException("Could not find date-time when table " + tableId + " is occupied");
     }
 
     @FunctionalInterface

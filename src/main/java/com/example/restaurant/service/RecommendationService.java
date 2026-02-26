@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -67,8 +68,10 @@ public class RecommendationService {
                 .max(Comparator.comparing(TableRecommendation::score))
                 .orElse(null);
 
+        boolean hasExactCapacityTable = hasExactCapacityTable(currentTables, zone, partySize);
+
         TableRecommendation mergedOption = null;
-        if (bestSingle == null) {
+        if (partySize > 1 && bestSingle == null && !hasExactCapacityTable) {
             mergedOption = findMergedOption(request, currentTables, occupiedIds);
             if (mergedOption != null) {
                 filtered.add(0, mergedOption);
@@ -121,53 +124,107 @@ public class RecommendationService {
         return currentTables();
     }
 
+    private boolean hasExactCapacityTable(List<TableInfo> tables, Zone zone, int partySize) {
+        return tables.stream()
+                .filter(table -> zone == null || table.zone() == zone)
+                .anyMatch(table -> table.seats() == partySize);
+    }
+
     private TableRecommendation findMergedOption(SearchRequest request, List<TableInfo> tables, Set<String> occupiedIds) {
+        List<TableInfo> availableTables = tables.stream()
+                .filter(table -> !occupiedIds.contains(table.id()))
+                .filter(table -> request.zone() == null || table.zone() == request.zone())
+                .toList();
+
+        if (availableTables.size() < 2) {
+            return null;
+        }
+
         TableRecommendation bestOption = null;
+        int maxGroupSize = Math.min(4, availableTables.size());
+        for (int groupSize = 2; groupSize <= maxGroupSize; groupSize++) {
+            bestOption = findBestMergedCombination(request, availableTables, groupSize, bestOption);
+        }
+        return bestOption;
+    }
 
-        for (int i = 0; i < tables.size(); i++) {
-            TableInfo first = tables.get(i);
-            if (occupiedIds.contains(first.id())) {
-                continue;
+        private TableRecommendation findBestMergedCombination(SearchRequest request,
+                                                          List<TableInfo> availableTables,
+                                                          int groupSize,
+                                                          TableRecommendation currentBest) {
+        int[] indexes = new int[groupSize];
+        for (int i = 0; i < groupSize; i++) {
+            indexes[i] = i;
+        }
+
+        TableRecommendation best = currentBest;
+        while (true) {
+            List<TableInfo> combination = new ArrayList<>(groupSize);
+            for (int index : indexes) {
+                combination.add(availableTables.get(index));
             }
-            if (request.zone() != null && first.zone() != request.zone()) {
-                continue;
+
+            if (isConnectedGroup(combination)) {
+                int totalSeats = combination.stream().mapToInt(TableInfo::seats).sum();
+                if (totalSeats >= request.partySize()) {
+                    TableInfo merged = mergeTables(combination);
+                    TableRecommendation recommendation = toRecommendation(merged, request, false);
+
+                    List<String> ids = combination.stream().map(TableInfo::id).toList();
+                    recommendation = new TableRecommendation(
+                            recommendation.table(),
+                            false,
+                            false,
+                            recommendation.score() + (8 * (groupSize - 1)),
+                            recommendation.reason() + " · Kombineeritud lauad: " + String.join(" + ", ids),
+                            true,
+                            ids
+                    );
+
+                    if (best == null || recommendation.score() > best.score()) {
+                        best = recommendation;
+                    }
+                }
             }
 
-            for (int j = i + 1; j < tables.size(); j++) {
-                TableInfo second = tables.get(j);
-                if (occupiedIds.contains(second.id())) {
-                    continue;
-                }
-                if (first.zone() != second.zone()) {
-                    continue;
-                }
-                if (!isAdjacent(first, second)) {
+                int next = groupSize - 1;
+            while (next >= 0 && indexes[next] == availableTables.size() - groupSize + next) {
+                next--;
+            }
+            if (next < 0) {
+                break;
+            }
+
+            indexes[next]++;
+            for (int i = next + 1; i < groupSize; i++) {
+                indexes[i] = indexes[i - 1] + 1;
+            }
+        }
+        return best;
+    }
+
+    private boolean isConnectedGroup(List<TableInfo> tables) {
+        Set<String> visited = new LinkedHashSet<>();
+        visited.add(tables.get(0).id());
+
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (TableInfo table : tables) {
+                if (visited.contains(table.id())) {
                     continue;
                 }
 
-                int totalSeats = first.seats() + second.seats();
-                if (totalSeats < request.partySize()) {
-                    continue;
-                }
-
-                TableInfo merged = mergeTables(first, second);
-                TableRecommendation recommendation = toRecommendation(merged, request, false);
-                recommendation = new TableRecommendation(
-                        recommendation.table(),
-                        false,
-                        false,
-                        recommendation.score() + 8,
-                        recommendation.reason() + " · Kombineeritud lauad: " + first.id() + " + " + second.id(),
-                        true,
-                        List.of(first.id(), second.id())
-                );
-
-                if (bestOption == null || recommendation.score() > bestOption.score()) {
-                    bestOption = recommendation;
+                boolean touchesVisited = tables.stream()
+                        .filter(candidate -> visited.contains(candidate.id()))
+                        .anyMatch(candidate -> isAdjacent(candidate, table));
+                if (touchesVisited) {
+                    visited.add(table.id());
+                    changed = true;
                 }
             }
         }
-        return bestOption;
+        return visited.size() == tables.size();
     }
 
     private boolean isAdjacent(TableInfo first, TableInfo second) {
@@ -175,17 +232,20 @@ public class RecommendationService {
         return distance <= ADJACENCY_THRESHOLD;
     }
 
-     private TableInfo mergeTables(TableInfo first, TableInfo second) {
+     private TableInfo mergeTables(List<TableInfo> tables) {
+        int totalSeats = tables.stream().mapToInt(TableInfo::seats).sum();
+        int avgX = (int) Math.round(tables.stream().mapToInt(TableInfo::x).average().orElse(0));
+        int avgY = (int) Math.round(tables.stream().mapToInt(TableInfo::y).average().orElse(0));
         return new TableInfo(
-                first.id() + "+" + second.id(),
-                first.seats() + second.seats(),
-                first.zone(),
-                (first.x() + second.x()) / 2,
-                (first.y() + second.y()) / 2,
-                first.privacy() || second.privacy(),
-                first.window() || second.window(),
-                first.accessibility() || second.accessibility(),
-                first.kidsArea() || second.kidsArea()
+                tables.stream().map(TableInfo::id).collect(Collectors.joining("+")),
+                totalSeats,
+                tables.get(0).zone(),
+                avgX,
+                avgY,
+                tables.stream().anyMatch(TableInfo::privacy),
+                tables.stream().anyMatch(TableInfo::window),
+                tables.stream().anyMatch(TableInfo::accessibility),
+                tables.stream().anyMatch(TableInfo::kidsArea)
         );
     }
 
