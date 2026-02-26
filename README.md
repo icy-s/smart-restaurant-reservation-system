@@ -35,7 +35,7 @@ cd smart-restaurant-reservation-system
 
 > Kui sul puudub `mvn` (Maven), kasuta Maven Wrapper’it. See töötab ka puhtas masinas.
 
-**macOS / Linux**
+### macOS / Linux
 ```bash
 ./mvnw spring-boot:run
 ```
