@@ -131,8 +131,9 @@ function makeDraggable(card) {
         if (e.button !== 0) return;
         dragging = true;
         activePointerId = e.pointerId;
-        offsetX = e.clientX - card.offsetLeft;
-        offsetY = e.clientY - card.offsetTop;
+        const cardRect = card.getBoundingClientRect();
+        offsetX = e.clientX - cardRect.left;
+        offsetY = e.clientY - cardRect.top;
         card.classList.add('dragging');
         card.setPointerCapture?.(e.pointerId);
         card.addEventListener('pointermove', pointerMoveHandler);
